@@ -1,0 +1,57 @@
+from flask import Flask, jsonify, send_from_directory
+from flask_cors import CORS
+import os
+
+app = Flask(__name__, static_folder="frontend/build", static_url_path="")
+CORS(app)  # Разрешаем CORS для React
+
+# API маршрут
+@app.route('/api/data')
+def get_data():
+    data = {"message": "Привет от Flask!", "items": [1, 2, 3, 4, 5]}
+    return jsonify(data)
+
+# Служит файлы React (index.html)
+@app.route('/')
+def serve_react():
+    return send_from_directory(app.static_folder, "index.html")
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
+cd frontend
+npm run build  # Создаст готовый React
+cd ..
+python app.py  # Запустит Flask API + Reactnpx create-react-app frontend
+cd frontend
+npm installimport React, { useState, useEffect } from "react";
+
+function App() {
+    const [data, setData] = useState(null);
+
+    useEffect(() => {
+        fetch("/api/data")
+            .then(response => response.json())
+            .then(data => setData(data))
+            .catch(error => console.error("Ошибка:", error));
+    }, []);
+
+    return (
+        <div>
+            <h1>React + Flask API</h1>
+            {data ? (
+                <>
+                    <p>{data.message}</p>
+                    <ul>
+                        {data.items.map((item, index) => (
+                            <li key={index}>{item}</li>
+                        ))}
+                    </ul>
+                </>
+            ) : (
+                <p>Загрузка...</p>
+            )}
+        </div>
+    );
+}
+
+export default App;
