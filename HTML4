@@ -1,0 +1,36 @@
+import random
+import string
+
+def generate_passwords(full_name, birth_date, num_passwords=10):
+    name_parts = full_name.replace(" ", "").lower()  # Убираем пробелы и делаем строчные буквы
+    birth_parts = birth_date.replace(".", "").replace("-", "")  # Убираем точки и дефисы
+    
+    base_words = [
+        name_parts, birth_parts, name_parts[::-1], birth_parts[::-1],  # Обычные и перевёрнутые
+        name_parts[:3] + birth_parts[-2:], birth_parts[:4] + name_parts[-2:]
+    ]
+    
+    special_chars = "@#$%&*!"
+    passwords = []
+
+    for _ in range(num_passwords):
+        base = random.choice(base_words)  # Выбираем основу для пароля
+        extra = "".join(random.choices(string.ascii_letters + string.digits, k=3))  # Случайные буквы и цифры
+        special = random.choice(special_chars)  # Один спецсимвол
+        
+        password = f"{base}{extra}{special}"
+        passwords.append(password)
+
+    return passwords
+
+# Ввод данных
+full_name = input("Введите ФИО: ")
+birth_date = input("Введите дату рождения (дд.мм.гггг): ")
+
+# Генерация паролей
+generated_passwords = generate_passwords(full_name, birth_date)
+
+# Вывод результатов
+print("\n🔒 Сгенерированные пароли:")
+for idx, pwd in enumerate(generated_passwords, 1):
+    print(f"{idx}. {pwd}")
