@@ -1,0 +1,102 @@
+import React, { useState, useEffect, useMemo } from "react";
+
+const PAGE_SIZE = 50; // Количество товаров на странице
+
+const ProductsTable = () => {
+  const [products, setProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("https://dummyjson.com/products?limit=10000")
+      .then((res) => res.json())
+      .then((data) => {
+        setProducts(data.products);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Ошибка загрузки:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  // Оптимизированная фильтрация товаров
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) =>
+      product.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [products, searchQuery]);
+
+  // Оптимизированная пагинация
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    return filteredProducts.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [filteredProducts, currentPage]);
+
+  const totalPages = Math.ceil(filteredProducts.length / PAGE_SIZE);
+
+  if (loading) return <p>Загрузка данных...</p>;
+
+  return (
+    <div style={{ padding: "20px", maxWidth: "1000px", margin: "0 auto" }}>
+      <h1>Список товаров</h1>
+      <input
+        type="text"
+        placeholder="Поиск товаров..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        style={{
+          padding: "8px",
+          marginBottom: "10px",
+          width: "300px",
+          fontSize: "16px",
+        }}
+      />
+      <table
+        border="1"
+        width="100%"
+        cellPadding="8"
+        style={{ borderCollapse: "collapse" }}
+      >
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Цена ($)</th>
+            <th>Рейтинг</th>
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedProducts.map((product) => (
+            <tr key={product.id}>
+              <td>{product.id}</td>
+              <td>{product.title}</td>
+              <td>{product.price}</td>
+              <td>{product.rating}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style={{ marginTop: "20px" }}>
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+        >
+          Назад
+        </button>
+        <span style={{ margin: "0 10px" }}>
+          Страница {currentPage} из {totalPages}
+        </span>
+        <button
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+        >
+          Вперёд
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ProductsTable;
