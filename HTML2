@@ -1,0 +1,105 @@
+import React, { useState, useEffect, useMemo } from "react";
+
+const symbols = ["♥️", "♦️", "♣️", "♠️", "★", "☆", "■", "□"];
+
+const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
+
+const generateCards = () => {
+  const selectedSymbols = shuffleArray(symbols).slice(0, 4); // Берём 4 случайных символа
+  const cardSymbols = shuffleArray([...selectedSymbols, ...selectedSymbols]); // Дублируем и перемешиваем
+  return cardSymbols.map((symbol, index) => ({
+    id: index,
+    symbol,
+    isOpen: false,
+    isMatched: false,
+  }));
+};
+
+const MemoryGame = () => {
+  const [cards, setCards] = useState(generateCards);
+  const [selectedCards, setSelectedCards] = useState([]);
+  const [moves, setMoves] = useState(0);
+  const [isChecking, setIsChecking] = useState(false);
+  const [matchedSymbols, setMatchedSymbols] = useState(new Set());
+
+  useEffect(() => {
+    if (matchedSymbols.size === 1) {
+      alert(`Вы выиграли! Ходов: ${moves}`);
+    }
+  }, [matchedSymbols]);
+
+  const handleCardClick = (card) => {
+    if (isChecking || card.isOpen || card.isMatched) return;
+
+    const updatedCards = cards.map((c) =>
+      c.id === card.id ? { ...c, isOpen: true } : c
+    );
+    setCards(updatedCards);
+    setSelectedCards([...selectedCards, card]);
+
+    if (selectedCards.length === 1) {
+      setIsChecking(true);
+      setMoves(moves + 1);
+
+      setTimeout(() => {
+        const [firstCard, secondCard] = [selectedCards[0], card];
+
+        if (firstCard.symbol === secondCard.symbol) {
+          setMatchedSymbols(new Set([...matchedSymbols, firstCard.symbol]));
+
+          setCards((prevCards) =>
+            prevCards.map((c) =>
+              c.symbol === firstCard.symbol ? { ...c, isMatched: true } : c
+            )
+          );
+        } else {
+          setCards((prevCards) =>
+            prevCards.map((c) =>
+              c.id === firstCard.id || c.id === secondCard.id
+                ? { ...c, isOpen: false }
+                : c
+            )
+          );
+        }
+
+        setSelectedCards([]);
+        setIsChecking(false);
+      }, 1000);
+    }
+  };
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <h1>Карточки на память</h1>
+      <p>Ходы: {moves}</p>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 100px)",
+          gap: "10px",
+          justifyContent: "center",
+        }}
+      >
+        {cards.map((card) => (
+          <button
+            key={card.id}
+            onClick={() => handleCardClick(card)}
+            style={{
+              width: "100px",
+              height: "100px",
+              fontSize: "2rem",
+              cursor: card.isMatched ? "default" : "pointer",
+              backgroundColor: card.isMatched ? "lightgreen" : "lightgray",
+              border: "1px solid black",
+            }}
+            disabled={card.isMatched}
+          >
+            {card.isOpen || card.isMatched ? card.symbol : "?"}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default MemoryGame;
