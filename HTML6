@@ -1,0 +1,86 @@
+from flask import Flask, render_template_string
+
+app = Flask(__name__)
+
+# Шаблон header и footer
+header_html = """
+<header>
+    <nav>
+        <a href='/'>Главная</a> |
+        <a href='/about'>О нас</a> |
+        <a href='/contacts'>Контакты</a> |
+        <a href='/cart'>Корзина</a>
+    </nav>
+</header>
+"""
+
+footer_html = """
+<footer>
+    <p>© 2025 Все права защищены.</p>
+</footer>
+"""
+
+# Главный шаблон
+base_html = """
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        nav a { margin: 0 10px; text-decoration: none; color: blue; }
+        footer { margin-top: 20px; padding: 10px; background: #f1f1f1; }
+    </style>
+</head>
+<body>
+    {{ header }}
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    {{ footer }}
+</body>
+</html>
+"""
+
+# Маршруты
+@app.route("/")
+def home():
+    return render_template_string(base_html, title="Главная", header=header_html, footer=footer_html) + """
+    {% block content %}
+    <h1>Добро пожаловать!</h1>
+    <p>Это главная страница нашего сайта.</p>
+    {% endblock %}
+    """
+
+@app.route("/about")
+def about():
+    return render_template_string(base_html, title="О нас", header=header_html, footer=footer_html) + """
+    {% block content %}
+    <h1>О нас</h1>
+    <p>Мы занимаемся продажей лучших товаров.</p>
+    {% endblock %}
+    """
+
+@app.route("/contacts")
+def contacts():
+    return render_template_string(base_html, title="Контакты", header=header_html, footer=footer_html) + """
+    {% block content %}
+    <h1>Контакты</h1>
+    <p>Email: example@mail.com</p>
+    <p>Телефон: +7 (123) 456-78-90</p>
+    {% endblock %}
+    """
+
+@app.route("/cart")
+def cart():
+    return render_template_string(base_html, title="Корзина", header=header_html, footer=footer_html) + """
+    {% block content %}
+    <h1>Корзина</h1>
+    <p>Ваша корзина пуста.</p>
+    {% endblock %}
+    """
+
+if __name__ == "__main__":
+    app.run(debug=True)
